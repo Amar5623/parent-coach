@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Warm, restrained palette */
+  --color-canvas: #faf7f2;
+  --color-surface: #ffffff;
+  --color-sunken: #f3eee6;
+  --color-line: #e7dfd3;
+  --color-ink: #2b2722;
+  --color-muted: #6c6358;
+  --color-brand: #2f6b5f;
+  --color-brand-strong: #24564c;
+  --color-brand-soft: #e4eee8;
+  --color-danger: #a8402c;
+  --color-danger-soft: #fbece7;
+
+  --font-sans: var(--font-inter), var(--font-nastaliq), ui-sans-serif, system-ui, sans-serif;
+  --font-urdu:
+    var(--font-nastaliq), "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Noto Naskh Arabic",
+    "Segoe UI", serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/*
+ * In the Urdu interface, give every label room for Nastaliq's tall glyphs.
+ * (Unlayered rules override Tailwind's per-utility line heights.)
+ */
+.ui-urdu * {
+  line-height: 2;
+}
+
+/*
+ * Nastaliq letters are tall and slanted; they need a slightly larger size and
+ * generous line height so stacked ligatures and dots don't collide or clip.
+ */
+.urdu-text {
+  font-family: var(--font-urdu);
+  font-size: 1.05em;
+  line-height: 2.2;
 }
