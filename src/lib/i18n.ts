@@ -72,6 +72,8 @@ const en: UiStrings = {
     invalid_request: "That message couldn't be sent. Please shorten it and try again.",
     payload_too_large: "That conversation is too long to send. Please start a new one.",
     rate_limited: "The coach is busy right now. Please wait a moment and try again.",
+    daily_limit:
+      "Today's message limit has been reached. Please try again tomorrow. In an emergency, contact your local emergency services.",
     timeout: "The response took too long. Please try again.",
     not_configured: "The coach isn't set up correctly on the server.",
     upstream_error: "The coach couldn't respond right now. Please try again.",
@@ -120,6 +122,8 @@ const ur: UiStrings = {
     invalid_request: "یہ پیغام نہیں بھیجا جا سکا۔ براہِ کرم اسے مختصر کر کے دوبارہ کوشش کریں۔",
     payload_too_large: "یہ گفتگو بھیجنے کے لیے بہت لمبی ہے۔ براہِ کرم نئی گفتگو شروع کریں۔",
     rate_limited: "کوچ اس وقت مصروف ہے۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔",
+    daily_limit:
+      "آج کے پیغامات کی حد پوری ہو گئی ہے۔ براہِ کرم کل دوبارہ کوشش کریں۔ ہنگامی صورتحال میں اپنی مقامی ایمرجنسی سروس سے رابطہ کریں۔",
     timeout: "جواب میں بہت زیادہ وقت لگ گیا۔ دوبارہ کوشش کریں۔",
     not_configured: "سرور پر کوچ درست طریقے سے سیٹ اپ نہیں ہے۔",
     upstream_error: "کوچ اس وقت جواب نہیں دے سکا۔ دوبارہ کوشش کریں۔",

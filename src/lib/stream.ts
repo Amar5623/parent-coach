@@ -17,6 +17,7 @@ const ERROR_CODES: readonly ChatErrorCode[] = [
   "invalid_request",
   "payload_too_large",
   "rate_limited",
+  "daily_limit",
   "timeout",
   "not_configured",
   "upstream_error",

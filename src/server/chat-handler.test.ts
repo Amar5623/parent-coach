@@ -5,6 +5,7 @@ import { textSource } from "@/test/streams";
 import { handleChatRequest } from "./chat-handler";
 import type { LlmMessage } from "./coach";
 import { ProviderError, type StreamCompletion } from "./groq";
+import { RateLimiter } from "./rate-limit";
 
 function post(body: unknown, init: RequestInit = {}): Request {
   return new Request("http://localhost/api/chat", {
@@ -131,5 +132,49 @@ describe("handleChatRequest", () => {
     expect(providerSignal?.aborted).toBe(false);
     client.abort();
     expect(providerSignal?.aborted).toBe(true);
+  });
+
+  describe("rate limiting", () => {
+    const limited = () => new RateLimiter({ perMinute: 1, perIpPerDay: 0, totalPerDay: 0 });
+
+    it("returns 429 with Retry-After once the limit is hit, without calling the model", async () => {
+      const rateLimiter = limited();
+      const provider = fakeProvider(["ok"]);
+      await handleChatRequest(post(okBody), { streamCompletion: provider, rateLimiter });
+      const response = await handleChatRequest(post(okBody), { streamCompletion: provider, rateLimiter });
+
+      expect(response.status).toBe(429);
+      expect(await response.json()).toMatchObject({ error: "rate_limited" });
+      expect(Number(response.headers.get("retry-after"))).toBeGreaterThan(0);
+      expect(provider).toHaveBeenCalledTimes(1);
+    });
+
+    it("reports the daily cap as daily_limit", async () => {
+      const rateLimiter = new RateLimiter({ perMinute: 0, perIpPerDay: 0, totalPerDay: 1 });
+      const provider = fakeProvider(["ok"]);
+      await handleChatRequest(post(okBody), { streamCompletion: provider, rateLimiter });
+      const response = await handleChatRequest(post(okBody), { streamCompletion: provider, rateLimiter });
+      expect(response.status).toBe(429);
+      expect(await response.json()).toMatchObject({ error: "daily_limit" });
+    });
+
+    it("still serves the fixed safety reply when the limit is exhausted", async () => {
+      const rateLimiter = limited();
+      const provider = fakeProvider(["ok"]);
+      await handleChatRequest(post(okBody), { streamCompletion: provider, rateLimiter });
+      const body = { language: "en", messages: [{ role: "user", content: "My toddler swallowed bleach" }] };
+      const response = await handleChatRequest(post(body), { streamCompletion: provider, rateLimiter });
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("x-coach-response")).toBe("safety");
+    });
+
+    it("does not spend the limit on invalid requests", async () => {
+      const rateLimiter = limited();
+      const provider = fakeProvider(["ok"]);
+      await handleChatRequest(post("{nope"), { streamCompletion: provider, rateLimiter });
+      const response = await handleChatRequest(post(okBody), { streamCompletion: provider, rateLimiter });
+      expect(response.status).toBe(200);
+    });
   });
 });

@@ -4,6 +4,19 @@ A small bilingual (English / Urdu) parenting coach chatbot. A parent describes a
 
 > **Not for emergencies.** Parent Coach gives general parenting guidance only. It is not medical, mental-health or legal advice and cannot contact emergency services.
 
+## Live demo
+
+**<!-- TODO: paste Vercel URL --> https://YOUR-APP.vercel.app** (temporary, will be taken down after review)
+
+No setup needed. Things to try:
+
+- **Everyday:** "My 4-year-old has a meltdown every time we leave the park. I end up shouting and then feel guilty."
+- **Urdu:** switch to اردو and type "میرا چھ سال کا بیٹا رات کو سونے سے انکار کرتا ہے اور ہر رات ایک گھنٹہ لڑائی ہوتی ہے۔"
+- **Crisis (fixed safety reply, no LLM call):** "My 2 year old just swallowed some pills from my handbag"
+- **Sensitive (model + extra safety reminder):** "My 7 year old daughter told me her uncle touches her inappropriately when he visits. What should I do?"
+
+The demo is rate limited (see [Rate limits](#rate-limits)). Crisis messages are never limited.
+
 ## Setup
 
 Requires Node.js 20.9+ (developed on Node 24).
@@ -20,6 +33,9 @@ npm run dev                  # http://localhost:3000
 | -------------- | -------- | ---------------------------------------------------------------------------------------------------- |
 | `GROQ_API_KEY` | yes      | Groq API key. Read only on the server; never sent to the browser.                                    |
 | `GROQ_MODEL`   | no       | Groq chat model id. Defaults to `openai/gpt-oss-120b`. Any Groq chat model works. |
+| `RATE_LIMIT_PER_MINUTE` | no | Model replies per client IP per minute. Default `10`. `0` turns it off.            |
+| `DAILY_LIMIT_PER_IP`    | no | Model replies per client IP per UTC day. Default `100`. `0` turns it off.          |
+| `DAILY_LIMIT_TOTAL`     | no | Model replies across all users per UTC day. Default `1000`. `0` turns it off.      |
 
 Without a key the app still loads and the fixed safety replies still work, but normal replies show a "not set up correctly" error.
 
@@ -74,6 +90,19 @@ There are three lightweight layers:
    - *Sensitive topics* (abuse, self-harm, medical signs, medication, diagnosis, legal) go to the model with an extra safety reminder.
 
 **Limitations.** Keyword screening is crude. It will miss danger phrased in ways it doesn't anticipate (those cases rely on the model following the prompt), and it will sometimes flag everyday messages: hyperbole like "I'll kill him" gets the fixed emergency reply. Prompt-injection resistance depends mostly on the model. The model can still produce imperfect or wrong advice. None of these checks guarantee safe output.
+
+## Rate limits
+
+`src/server/rate-limit.ts` limits **model calls** so a public demo can't exhaust the Groq key: per IP per minute, per IP per day, and a total per day, all set by the env vars above. Over the limit, the API returns `429` with a `Retry-After` header and the UI shows "busy, try again in a moment" or "today's limit has been reached".
+
+- **Safety first:** the risk screen runs before the limiter. A clear emergency always gets the fixed safety reply, even after the daily cap is reached. Invalid requests don't count.
+- **Best-effort:** counts live in server memory and reset at 00:00 UTC. On a single `npm start` server they are exact. On serverless hosts like Vercel, each warm instance keeps its own counts, so the real ceiling can be somewhat higher. A shared store (e.g. Redis) would make it exact; that was out of scope for a no-database app. Groq's own key limits are the hard backstop.
+
+## Deploying (Vercel)
+
+1. Import the GitHub repo in Vercel. The defaults for Next.js work as is.
+2. Under **Settings → Environment Variables**, add `GROQ_API_KEY` (preferably a separate key just for the demo), and optionally the limit variables.
+3. Deploy, then try one everyday and one crisis message on the live URL.
 
 ## Evaluation
 
