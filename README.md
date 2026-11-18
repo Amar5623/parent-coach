@@ -6,7 +6,9 @@ A small bilingual (English / Urdu) parenting coach chatbot. A parent describes a
 
 ## Live demo
 
-**<!-- TODO: paste Vercel URL --> https://YOUR-APP.vercel.app** (temporary, will be taken down after review)
+**https://parentingcoach.vercel.app/** (temporary, will be taken down after review)
+
+**Video walkthrough (2 min):** https://youtu.be/3oX6jgmES8k
 
 No setup needed. Things to try:
 
